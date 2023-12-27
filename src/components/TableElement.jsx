@@ -1,4 +1,4 @@
-import {Td, Tooltip, Text, Box} from "@chakra-ui/react";
+import {Td, Tooltip, Text} from "@chakra-ui/react";
 
 
 const TableElement = (props) => {
