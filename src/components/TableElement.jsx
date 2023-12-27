@@ -15,7 +15,7 @@ const TableElement = (props) => {
                     {
                         props.image === undefined || props.image === "" ?
                             <div className={'image-container'} style={{overflow: 'hidden'}}>
-                                <img src={'src/assets/blank.png'}/>
+                                <img src={'https://lastfm.freetls.fastly.net/i/u/300x300/32f2b94ebebb2742709006790b9209b9.png'}/>
                                 <Text className={'overlay-text'} fontSize={'xs'} isTruncated>
                                     {props.name}<br/><strong>{props.artist}</strong>
                                 </Text>
