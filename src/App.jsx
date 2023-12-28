@@ -6,14 +6,13 @@ import {
     Heading,
     HStack,
     Input,
-    Text
+    Text,
 } from "@chakra-ui/react";
 import {useState} from "react";
 
 function App() {
     const [username, setUsername] = useState("")
     const [inputText, setInputText] = useState("")
-
   return (
     <>
         <Container maxW={'8xl'}>
