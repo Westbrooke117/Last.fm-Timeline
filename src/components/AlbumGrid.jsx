@@ -14,14 +14,16 @@ const AlbumGrid = (props) => {
         let strMonth = month.toString();
         let nextMonth = (month+1).toString()
 
-        if (strMonth.length === 1){
+        if (strMonth.length === 1 && strMonth !== '9'){
             strMonth = `0${month}`
             nextMonth = `0${month+1}`
         }
 
+        console.log(nextMonth === '13' ? (`${year+1}-01-01`) : (`${year}-${nextMonth}-01`))
+
         return [
             Date.parse(`${year}-${strMonth}-01`)/1000,
-            Date.parse(`${year}-${nextMonth}-01`)/1000
+            nextMonth === '13' ? Date.parse(`${year+1}-01-01`)/1000 : Date.parse(`${year}-${nextMonth}-01`)/1000
         ]
     }
     const [monthStart, monthEnd] = formatDate()
@@ -44,7 +46,7 @@ const AlbumGrid = (props) => {
                 // Use Promise.all to wait for all images to be fetched
                 Promise.all(monthAlbumData)
                     .then(data => {
-                        console.log(data)
+                        // console.log(data)
                         setMonthData(data)
                     })
                     .catch(error => console.error(error));
