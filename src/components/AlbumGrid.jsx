@@ -50,27 +50,18 @@ const AlbumGrid = (props) => {
                     .catch(error => console.error(error));
             });
 
-        async function getAlbumImages(artist, album, mbid) {
+        async function getAlbumImages(artist, album) {
             try {
-                const response = await axios.get(`https://ws.audioscrobbler.com/2.0/?method=album.getinfo&api_key=82d112e473f59ade0157abe4a47d4eb5&format=json&artist=${encodeURIComponent(artist)}&album=${encodeURIComponent(album)}&mbid=${mbid}`);
+                const response = await axios.get(`https://ws.audioscrobbler.com/2.0/?method=album.getinfo&api_key=82d112e473f59ade0157abe4a47d4eb5&format=json&artist=${encodeURIComponent(artist)}&album=${encodeURIComponent(album)}`);
                 return {
                     small: response.data.album.image[0]['#text'],
                     large: response.data.album.image[3]['#text']
                 };
             } catch (error) {
-                //Try again without musicbrainz ID
-                try {
-                    const response = await axios.get(`https://ws.audioscrobbler.com/2.0/?method=album.getinfo&api_key=82d112e473f59ade0157abe4a47d4eb5&format=json&artist=${encodeURIComponent(artist)}&album=${encodeURIComponent(album)}`);
-                    return {
-                        small: response.data.album.image[0]['#text'],
-                        large: response.data.album.image[3]['#text']
-                    };
-                } catch (err) {
-                    return {
-                        small: undefined,
-                        large: undefined
-                    };
-                }
+                return {
+                    small: undefined,
+                    large: undefined
+                };
             }
         }
     }, [props.user, props.year]);
