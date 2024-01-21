@@ -10,3 +10,8 @@
     transform: translate(-50%, -50%);
     width: 150px;
 }
+
+option {
+    font-size: 16px;
+    font-weight: normal;
+}

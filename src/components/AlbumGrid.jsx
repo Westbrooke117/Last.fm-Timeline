@@ -19,8 +19,6 @@ const AlbumGrid = (props) => {
             nextMonth = `0${month+1}`
         }
 
-        console.log(nextMonth === '13' ? (`${year+1}-01-01`) : (`${year}-${nextMonth}-01`))
-
         return [
             Date.parse(`${year}-${strMonth}-01`)/1000,
             nextMonth === '13' ? Date.parse(`${year+1}-01-01`)/1000 : Date.parse(`${year}-${nextMonth}-01`)/1000
@@ -33,31 +31,40 @@ const AlbumGrid = (props) => {
         axios.get(`https://ws.audioscrobbler.com/2.0/?method=user.getweeklyalbumchart&user=${props.user}&api_key=82d112e473f59ade0157abe4a47d4eb5&format=json&limit=16&from=${monthStart}&to=${monthEnd}`)
             .then((response) => {
                 let monthAlbumData = response.data.weeklyalbumchart.album.map(async (album) => {
-                    const imgURL = await getAlbumImage(album.artist['#text'], album.name);
+                    const { small, large } = await getAlbumImages(album.artist['#text'], album.name, album.mbid);
                     return {
                         name: album.name,
                         url: album.url,
                         scrobbles: parseInt(album.playcount),
                         artist: album.artist['#text'],
-                        image: imgURL
+                        image: { small, large },
+                        mbid: album.mbid
                     };
                 });
 
                 // Use Promise.all to wait for all images to be fetched
                 Promise.all(monthAlbumData)
                     .then(data => {
-                        // console.log(data)
                         setMonthData(data)
                     })
                     .catch(error => console.error(error));
             });
 
-        function getAlbumImage(artist, album) {
-            return axios.get(`https://ws.audioscrobbler.com/2.0/?method=album.getinfo&api_key=82d112e473f59ade0157abe4a47d4eb5&format=json&artist=${artist}&album=${album}`)
-                .then(response => response.data.album.image[3]['#text'])
-                .catch(error => undefined)
+        async function getAlbumImages(artist, album, mbid) {
+            try {
+                const response = await axios.get(`https://ws.audioscrobbler.com/2.0/?method=album.getinfo&api_key=82d112e473f59ade0157abe4a47d4eb5&format=json&artist=${encodeURIComponent(artist)}&album=${encodeURIComponent(album)}&mbid=${mbid}`);
+                return {
+                    small: response.data.album.image[0]['#text'],
+                    large: response.data.album.image[3]['#text']
+                };
+            } catch (error) {
+                return {
+                    small: undefined,
+                    large: undefined
+                };
+            }
         }
-    },[props.user])
+    }, [props.user, props.year]);
 
     let gridSize = new Array(4).fill(0) //4
     let cellIndex = 0;
@@ -86,7 +93,6 @@ const AlbumGrid = (props) => {
                 </>
             )}
             <Box maxW={"1200px"}>
-                {/* eslint-disable-next-line react/prop-types */}
                 <Heading
                     maxW={1200}
                     textAlign={headingAlignment === "right" ? "left" : "right"}
@@ -110,7 +116,8 @@ const AlbumGrid = (props) => {
                                                         <TableElement
                                                             key={index2}
                                                             artist={monthData[cellIndex].artist}
-                                                            image={monthData[cellIndex].image}
+                                                            imageSmall={monthData[cellIndex].image.small}
+                                                            imageLarge={monthData[cellIndex].image.large}
                                                             name={monthData[cellIndex].name}
                                                             url={monthData[cellIndex].url}
                                                             scrobbles={monthData[cellIndex++].scrobbles}
