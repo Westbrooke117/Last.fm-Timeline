@@ -1,6 +1,6 @@
 import axios from "axios";
 import {useEffect, useState} from "react";
-import {Box, Fade, Heading, SlideFade, Table, TableContainer, Tbody, Td, Text, Tr} from "@chakra-ui/react";
+import {Box, Fade, Heading, Table, TableContainer, Tbody, Td, Tr} from "@chakra-ui/react";
 import {TableElement} from "./TableElement.jsx";
 
 const AlbumGrid = (props) => {
@@ -103,7 +103,7 @@ const AlbumGrid = (props) => {
                 <hr style={{ paddingBottom: "15px" }} />
                 {
                     monthData[1] !== undefined ?
-                        <TableContainer>
+                        <TableContainer borderRadius={10}>
                             <Fade in={true}>
                                 <Table size={"sm"} variant={"unstyled"} maxW={1200}>
                                     <Tbody>

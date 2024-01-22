@@ -1,8 +1,8 @@
 import './App.css'
-import {AlbumGrid} from "./components/AlbumGrid.jsx";
 import {
+    Alert, AlertIcon,
     Box,
-    Button,
+    Button, calc,
     Container,
     Heading,
     HStack,
@@ -11,24 +11,34 @@ import {
     NumberIncrementStepper,
     NumberInput,
     NumberInputField,
-    NumberInputStepper,
-    Text,
+    NumberInputStepper, SlideFade,
+    Text, useDisclosure,
 } from "@chakra-ui/react";
 import {useEffect, useState} from "react";
-import {ArrowBackIcon, ArrowDownIcon, ArrowForwardIcon, ArrowRightIcon} from '@chakra-ui/icons'
+import axios from "axios";
+import {AlbumGrid} from "./components/AlbumGrid.jsx";
+import {ArrowBackIcon, ArrowForwardIcon} from '@chakra-ui/icons'
+
 
 function App() {
+    //Used for form validation and setting proper state
     const [inputData, setInputData] = useState({
         username: "",
-        year: 2023
+        year: 2024
     })
+    let unixTimeRegistered;
 
+    //Actual state used for API requests
     const [data, setData] = useState({
         username: "",
-        year: 2023
+        year: 2024
     })
 
+    const [errorMessage, setErrorMessage] = useState("")
+    const [hasError, setErrorState] = useState(false)
+
     const calculateMonths = () => {
+        //If equal to current year, get all months so far
         if (data.year === new Date().getFullYear()){
             return new Date().getMonth()+1
         } else {
@@ -40,16 +50,50 @@ function App() {
         setInputData({...inputData, year: data.year})
     },[data.year])
 
+    const FormErrorChecker = async (name) => {
+
+        // To comply with last.fm username conventions
+        if (name.length > 15 || name.length < 2) {
+            setErrorMessage("Username must be between 2 and 15 characters");
+            return false;
+        }
+        const pattern = /^[a-zA-Z][a-zA-Z0-9_-]*$/;
+        if (!pattern.test(name)) {
+            setErrorMessage("Username must begin with a letter and contain only letters, numbers, '_' or '-'");
+            return false;
+        }
+
+        // To ensure user actually exists
+        try {
+            const response = await axios.get(`https://ws.audioscrobbler.com/2.0/?method=user.getinfo&user=${name}&api_key=82d112e473f59ade0157abe4a47d4eb5&format=json`)
+            unixTimeRegistered = {
+                year: new Date(response.data.user.registered['#text']*1000).getFullYear(),
+                month: new Date(response.data.user.registered['#text']*1000).getMonth()
+            }
+            setErrorMessage("");
+            return true;
+        } catch (error) {
+            setErrorMessage("User not found");
+            return false;
+        }
+    };
+
   return (
     <>
         <Container maxW={'8xl'}>
-            <form onSubmit={(e) => {
+            <form onSubmit={async (e) => {
                 e.preventDefault()
-                setData({username: inputData.username, year: inputData.year})
+                const isValid = await FormErrorChecker(inputData.username);
+                if (isValid) {
+                    setData({ username: inputData.username, year: inputData.year });
+                    setErrorState(false);
+                } else {
+                    setErrorState(true);
+                }
             }}>
                 <HStack mt={'50'} mb={1} justifyContent={'center'} alignItems={'center'}>
                     <Heading>Last.fm</Heading>
-                    <NumberInput focusBorderColor={'gray.700'} variant={'filled'} defaultValue={2023} min={2002} max={new Date().getFullYear()} textAlign={'center'} w={'fit-content'} value={inputData.year} onChange={(value) => setInputData({...inputData, year: parseInt(value)})}>
+                    <NumberInput focusBorderColor={'gray.700'} variant={'filled'} defaultValue={2024} min={2002} max={new Date().getFullYear()} textAlign={'center'} w={'fit-content'} value={inputData.year} onChange={(value) => setInputData({...inputData, year: parseInt(value)})}>
                         <NumberInputField color={"blue.200"} backgroundColor={'gray.700'} fontWeight={'bold'} fontSize={36} maxLength={4} maxW={135} mt={1} pb={3} pt={2}/>
                         <NumberInputStepper>
                             <NumberIncrementStepper mt={1}/>
@@ -60,10 +104,27 @@ function App() {
                 </HStack>
                 <Text mt={-1} textAlign={'center'}>Monthly album 4x4's for everyone!</Text>
                 <HStack mt={'5'} mb={'50'} justifyContent={'center'}>
-                    <Input onChange={(e) => setInputData({...inputData, username: e.target.value})} maxW={'20%'} variant='filled' placeholder='enter a last.fm username' />
+                    <Input onChange={(e) => {
+                        setInputData({...inputData, username: e.target.value})
+                        setErrorState(false)
+                    }} maxW={'20%'} variant='filled' placeholder='enter a last.fm username' />
                     <Button variant={'ghost'} colorScheme='blue' type={'submit'}>Start</Button>
                 </HStack>
             </form>
+            {
+                errorMessage === "" ?
+                    <></>
+                :
+                    <SlideFade in={hasError}>
+                        <Box display={'flex'} justifyContent={'center'}>
+                            <Alert status='error' mt={-6} borderRadius={10} maxW={500}>
+                                <AlertIcon/>
+                                {errorMessage}
+                            </Alert>
+                        </Box>
+                    </SlideFade>
+
+            }
             <div>
                 {
                     data.username &&
@@ -78,28 +139,37 @@ function App() {
                                 />
                             )
                         }
+                        <Box mt={6}><hr/></Box>
                         {
                             new Date().getFullYear() === data.year ?
                                 <HStack mt={10} mb={10} alignItems={'center'} justifyContent={'space-between'}>
                                     <a href={"#top"}>
-                                        <Button  onClick={() => setData({...data, year: data.year-1})} leftIcon={<ArrowBackIcon />} fontSize={28} size={'lg'} colorScheme='blue' variant='ghost'>Last Year ({data.year-1})</Button>
+                                        <Button  onClick={() => setData({...data, year: data.year-1})} leftIcon={<ArrowBackIcon />} fontSize={28} size={'lg'} fontWeight={'bold'} colorScheme='blue' variant='ghost'>Last Year ({data.year-1})</Button>
+                                    </a>
+                                    <div style={{display: 'flex', justifyContent: "center"}}>
+                                        <a href={"#top"}><Button size={'lg'} colorScheme='green' variant={'ghost'}>Go Back to Top</Button></a>
+                                    </div>
+
+                                    {/*To maintain alignment*/}
+                                    <a href={'#top'} style={{visibility: 'hidden'}}>
+                                        <Button onClick={() => setData({...data, year: data.year+1})} rightIcon={<ArrowForwardIcon />} fontSize={28} fontWeight={'bold'} size={'lg'} colorScheme='blue' variant='ghost'>Next Year ({data.year+1})</Button>
                                     </a>
                                 </HStack>
 
                                 :
-                                <HStack mt={8} mb={8} alignItems={'center'} justifyContent={'space-between'}>
+
+                                <HStack mt={10} mb={10} alignItems={'center'} justifyContent={'space-between'}>
                                     <a href={"#top"}>
-                                        <Button onClick={() => setData({...data, year: data.year-1})} leftIcon={<ArrowBackIcon />} fontSize={28} size={'lg'} colorScheme='blue' variant='ghost'>Last Year ({data.year-1})</Button>
+                                        <Button onClick={() => setData({...data, year: data.year-1})} leftIcon={<ArrowBackIcon />} fontSize={28} fontWeight={'bold'} size={'lg'} colorScheme='blue' variant='ghost'>Last Year ({data.year-1})</Button>
                                     </a>
+                                    <div style={{display: 'flex', justifyContent: "center"}}>
+                                        <a href={"#top"}><Button size={'lg'} colorScheme='green' variant={'ghost'}>Go Back to Top</Button></a>
+                                    </div>
                                     <a href={'#top'}>
-                                        <Button onClick={() => setData({...data, year: data.year+1})} rightIcon={<ArrowForwardIcon />} fontSize={28} size={'lg'} colorScheme='blue' variant='ghost'>Next Year ({data.year+1})</Button>
+                                        <Button onClick={() => setData({...data, year: data.year+1})} rightIcon={<ArrowForwardIcon />} fontSize={28} fontWeight={'bold'} size={'lg'} colorScheme='blue' variant='ghost'>Next Year ({data.year+1})</Button>
                                     </a>
                                 </HStack>
                         }
-                        <hr/>
-                        <div style={{display: 'flex', justifyContent: "center"}}>
-                            <a href={"#top"}><Button mt={5} mb={5} size={'lg'} colorScheme='green' variant={'ghost'}>Go Back to Top</Button></a>
-                        </div>
                     </>
                 }
             </div>
