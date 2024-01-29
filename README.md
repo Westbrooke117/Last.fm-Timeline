@@ -3,6 +3,7 @@ An interactive tool to view your last.fm listening history month-by-month.
 
 ## Future Features 📝
 - Export album grids or other components as images
+- Add a share button to share content to r/last.fm on Reddit
 - Create a "mini timeline" summary of the user's year on last.fm
 - Show a month-by-month breakdown of an albums listening stats when clicking on one
 - Reduce number of API calls by caching album image urls
