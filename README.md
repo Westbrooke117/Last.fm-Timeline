@@ -1,6 +1,10 @@
 # Last.fm Timeline
 An interactive tool to view your last.fm listening history month-by-month.
 
+## Current Features 📒
+- View a 4x4 grid of album covers for each month of the year
+- Select any year to view from 2002 to now for any user
+
 ## Future Features 📝
 - Export album grids or other components as images
 - Add a share button to share content to r/last.fm on Reddit
