@@ -15,3 +15,8 @@ option {
     font-size: 16px;
     font-weight: normal;
 }
+
+.downloadLink:hover {
+    cursor: pointer;
+    text-decoration: underline;
+}

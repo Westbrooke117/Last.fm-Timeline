@@ -3,7 +3,7 @@ import {
     Alert, AlertIcon,
     Box,
     Button, calc,
-    Container,
+    Container, Fade,
     Heading,
     HStack,
     Input,
@@ -11,16 +11,41 @@ import {
     NumberIncrementStepper,
     NumberInput,
     NumberInputField,
-    NumberInputStepper, SlideFade,
+    NumberInputStepper, Progress, SlideFade,
     Text, useDisclosure,
 } from "@chakra-ui/react";
 import {useEffect, useState} from "react";
 import axios from "axios";
 import {AlbumGrid} from "./components/AlbumGrid.jsx";
 import {ArrowBackIcon, ArrowForwardIcon} from '@chakra-ui/icons'
+import {MiniTimeline} from "./components/MiniTimeline.jsx";
+import * as htmlToImage from "html-to-image";
 
 
 function App() {
+    const exportAsPng = (ref, year, month, user) => {
+        if (ref) {
+            const options = {
+                style: {
+                    borderRadius: '0'
+                },
+                canvasWidth: 1200,
+                canvasHeight: 1200
+            }
+
+            htmlToImage.toPng(ref, options)
+                .then(function (dataUrl) {
+                    const link = document.createElement('a');
+                    link.href = dataUrl;
+                    link.download = `${year}-${month}-${user}`;
+                    link.click();
+                })
+                .catch(function (error) {
+                    console.error('Oops, something went wrong!', error);
+                });
+        }
+    };
+
     //Used for form validation and setting proper state
     const [inputData, setInputData] = useState({
         username: "",
@@ -34,20 +59,37 @@ function App() {
         year: 2024
     })
 
+    const [childrenLoading, setChildrenLoading] = useState(true)
+    const [loadingPercent, updateLoadingPercentage] = useState(0)
+
+    let totalMonths;
+    let loadedMonths = 0;
+
+    const handleChildLoading = () => {
+        loadedMonths += 1
+
+        let currentLoadingPercentage = (loadedMonths / totalMonths * 100)
+        updateLoadingPercentage(currentLoadingPercentage)
+
+        if (loadedMonths === totalMonths){
+            setChildrenLoading(false)
+        }
+    }
+
     const [errorMessage, setErrorMessage] = useState("")
     const [hasError, setErrorState] = useState(false)
+    const generateMonthArray = () => {
+        let currentMonth = new Date().getMonth()+1
 
-    const calculateMonths = () => {
-        //If equal to current year, get all months so far
-        if (data.year === new Date().getFullYear()){
-            return new Date().getMonth()+1
-        } else {
-            return 12
-        }
+        let monthArray = new Array(data.year === currentYear ? currentMonth : 12).fill(0);
+        totalMonths = monthArray.length;
+
+        return monthArray;
     }
 
     useEffect(() => {
         setInputData({...inputData, year: data.year})
+        setChildrenLoading(true)
     },[data.year])
 
     const FormErrorChecker = async (name) => {
@@ -78,13 +120,32 @@ function App() {
         }
     };
 
+    function idAscending( a, b ) {
+        if ( a.id < b.id ){
+            return -1;
+        }
+        if ( a.id > b.id ){
+            return 1;
+        }
+        return 0;
+    }
+
+    const [miniTimelineData, setMiniTimelineData] = useState([])
+    let tempData = [];
+    const StoreMonthData = (object) => {
+        tempData.push(object)
+        setMiniTimelineData(tempData)
+    }
+
+    let currentYear = new Date().getFullYear()
+
   return (
     <>
         <Container maxW={'8xl'}>
             <form onSubmit={async (e) => {
                 e.preventDefault()
-                const isValid = await FormErrorChecker(inputData.username);
-                if (isValid) {
+                const inputIsValid = await FormErrorChecker(inputData.username);
+                if (inputIsValid) {
                     setData({ username: inputData.username, year: inputData.year });
                     setErrorState(false);
                 } else {
@@ -110,6 +171,9 @@ function App() {
                     }} maxW={'20%'} variant='filled' placeholder='enter a last.fm username' />
                     <Button variant={'ghost'} colorScheme='blue' type={'submit'}>Start</Button>
                 </HStack>
+                <Fade in={loadingPercent !== 100 && data.username}>
+                    <Progress size={'xs'} value={loadingPercent} />
+                </Fade>
             </form>
             {
                 errorMessage === "" ?
@@ -127,21 +191,23 @@ function App() {
             }
             <div>
                 {
-                    data.username &&
-                    <>
+                    <SlideFade in={!childrenLoading}>
                         {
-                            new Array(calculateMonths()).fill(0).map((month, index) =>
+                            generateMonthArray().map((month, index) =>
                                 <AlbumGrid
                                     key={`month${index+1}`}
                                     user={data.username}
                                     year={data.year}
                                     month={index+1}
+                                    storeMonthData={StoreMonthData}
+                                    handleLoading={handleChildLoading}
                                 />
                             )
                         }
+                        <MiniTimeline data={miniTimelineData.sort(idAscending)}/>
                         <Box mt={6}><hr/></Box>
                         {
-                            new Date().getFullYear() === data.year ?
+                            currentYear === data.year ?
                                 <HStack mt={10} mb={10} alignItems={'center'} justifyContent={'space-between'}>
                                     <a href={"#top"}>
                                         <Button  onClick={() => setData({...data, year: data.year-1})} leftIcon={<ArrowBackIcon />} fontSize={28} size={'lg'} fontWeight={'bold'} colorScheme='blue' variant='ghost'>Last Year ({data.year-1})</Button>
@@ -170,7 +236,7 @@ function App() {
                                     </a>
                                 </HStack>
                         }
-                    </>
+                    </SlideFade>
                 }
             </div>
         </Container>

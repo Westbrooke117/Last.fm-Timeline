@@ -1,6 +1,15 @@
 import axios from "axios";
-import {useEffect, useState} from "react";
-import {Box, Fade, Heading, Table, TableContainer, Tbody, Td, Tr} from "@chakra-ui/react";
+import {useEffect, useRef, useState} from "react";
+import {
+    Box,
+    Fade,
+    Heading,
+    Table,
+    TableContainer,
+    Tbody,
+    Td,
+    Tr
+} from "@chakra-ui/react";
 import {TableElement} from "./TableElement.jsx";
 
 const AlbumGrid = (props) => {
@@ -26,6 +35,7 @@ const AlbumGrid = (props) => {
     }
     const [monthStart, monthEnd] = formatDate()
 
+
     useEffect(() => {
         setMonthData([{}])
         axios.get(`https://ws.audioscrobbler.com/2.0/?method=user.getweeklyalbumchart&user=${props.user}&api_key=82d112e473f59ade0157abe4a47d4eb5&format=json&limit=16&from=${monthStart}&to=${monthEnd}`)
@@ -45,7 +55,39 @@ const AlbumGrid = (props) => {
                 // Use Promise.all to wait for all images to be fetched
                 Promise.all(monthAlbumData)
                     .then(data => {
+                        props.storeMonthData({
+                            id: props.month-1,
+                            monthText: months[props.month-1].substring(0,3),
+                            albums: [{
+                                name: data[0].name,
+                                artist: data[0].artist,
+                                scrobbles: data[0].scrobbles,
+                                image: data[0].image.large
+
+                            }, {
+                                name: data[1].name,
+                                artist: data[1].artist,
+                                scrobbles: data[1].scrobbles,
+                                image: data[1].image.large
+                            }, {
+                                name: data[2].name,
+                                artist: data[2].artist,
+                                scrobbles: data[2].scrobbles,
+                                image: data[2].image.large
+                            }, {
+                                name: data[3].name,
+                                artist: data[3].artist,
+                                scrobbles: data[3].scrobbles,
+                                image: data[3].image.large
+                            }, {
+                                name: data[4].name,
+                                artist: data[4].artist,
+                                scrobbles: data[4].scrobbles,
+                                image: data[4].image.large
+                            }]
+                        })
                         setMonthData(data)
+                        props.handleLoading()
                     })
                     .catch(error => console.error(error));
             });
@@ -72,6 +114,9 @@ const AlbumGrid = (props) => {
     let headingAlignment = 'left';
     if (props.month % 2 !== 0) headingAlignment = 'right'
 
+    const gridRef = useRef(null)
+
+
     return (
         <Box display={"flex"}>
             {headingAlignment === "right" && (
@@ -93,17 +138,31 @@ const AlbumGrid = (props) => {
                 </>
             )}
             <Box maxW={"1200px"}>
-                <Heading
-                    maxW={1200}
-                    textAlign={headingAlignment === "right" ? "left" : "right"}
-                    pb={2}
-                >
-                    {months[props.month - 1]}
-                </Heading>
+                { headingAlignment === "right" ?
+                    <>
+                        <Heading
+                            textAlign={'left'}
+                            maxW={1200}
+                            pb={2}
+                        >
+                            {months[props.month - 1]}
+                        </Heading>
+                    </>
+                    :
+                    <>
+                        <Heading
+                            textAlign={'right'}
+                            maxW={1200}
+                            pb={2}
+                        >
+                            {months[props.month - 1]}
+                        </Heading>
+                    </>
+                }
                 <hr style={{ paddingBottom: "15px" }} />
                 {
                     monthData[1] !== undefined ?
-                        <TableContainer borderRadius={10}>
+                        <TableContainer borderRadius={10} ref={gridRef}>
                             <Fade in={true}>
                                 <Table size={"sm"} variant={"unstyled"} maxW={1200}>
                                     <Tbody>
