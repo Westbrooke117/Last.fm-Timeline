@@ -1,9 +1,9 @@
 import axios from "axios";
 import {useEffect, useRef, useState} from "react";
 import {
-    Box,
+    Box, Button,
     Fade,
-    Heading,
+    Heading, Link, Stack,
     Table,
     TableContainer,
     Tbody,
@@ -161,7 +161,8 @@ const AlbumGrid = (props) => {
                 }
                 <hr style={{ paddingBottom: "15px" }} />
                 {
-                    monthData[1] !== undefined ?
+                    monthData[1] &&
+                    <>
                         <TableContainer borderRadius={10} ref={gridRef}>
                             <Fade in={true}>
                                 <Table size={"sm"} variant={"unstyled"} maxW={1200}>
@@ -188,22 +189,8 @@ const AlbumGrid = (props) => {
                                 </Table>
                             </Fade>
                         </TableContainer>
-                        :
-                        <TableContainer>
-                            <Table size={"sm"} variant={"unstyled"} maxW={1200}>
-                                <Tbody>
-                                    {gridSize.map((row, index) => (
-                                        <Tr key={index}>
-                                            {
-                                                gridSize.map((cell, index2) => (
-                                                    <Td w={300} h={168.967}></Td>
-                                                ))
-                                            }
-                                        </Tr>
-                                    ))}
-                                </Tbody>
-                            </Table>
-                        </TableContainer>
+                        <Link color={'gray.500'} mt={3} display={'flex'} justifyContent={'center'} onClick={() => {props.saveAsImage(gridRef.current, undefined, undefined, 'grid')}}>Save as Image</Link>
+                    </>
                 }
             </Box>
             {headingAlignment === "left" && (

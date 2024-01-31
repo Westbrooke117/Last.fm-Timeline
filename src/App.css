@@ -20,3 +20,28 @@ option {
     cursor: pointer;
     text-decoration: underline;
 }
+
+.colorInput {
+    appearance: none;
+    -moz-appearance: none;
+    -webkit-appearance: none;
+    background-color: #1a202c;
+    width: 40px;
+    height: 40px;
+    border: none;
+    cursor: pointer;
+}
+
+.colorInput::-webkit-color-swatch {
+    border-radius: 20px;
+    width: 40px;
+    height: 40px;
+    border: none;
+}
+
+.colorInput::-moz-color-swatch {
+    border-radius: 20px;
+    width: 40px;
+    height: 40px;
+    border: none;
+}

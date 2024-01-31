@@ -23,26 +23,51 @@ import * as htmlToImage from "html-to-image";
 
 
 function App() {
-    const exportAsPng = (ref, year, month, user) => {
+    const exportAsPng = (ref, year, user, config) => {
         if (ref) {
-            const options = {
-                style: {
-                    borderRadius: '0'
-                },
-                canvasWidth: 1200,
-                canvasHeight: 1200
-            }
+            let options;
+            switch (config){
+                case 'grid':
+                    options = {
+                        style: {
+                            borderRadius: 0
+                        },
+                        canvasWidth: 1200,
+                        canvasHeight: 1200
+                    }
 
-            htmlToImage.toPng(ref, options)
-                .then(function (dataUrl) {
-                    const link = document.createElement('a');
-                    link.href = dataUrl;
-                    link.download = `${year}-${month}-${user}`;
-                    link.click();
-                })
-                .catch(function (error) {
-                    console.error('Oops, something went wrong!', error);
-                });
+                    htmlToImage.toPng(ref, options)
+                        .then(function (dataUrl) {
+                            const link = document.createElement('a');
+                            link.href = dataUrl;
+                            link.download = `${Math.floor(Math.random()*100)}_4x4`;
+                            link.click();
+                        })
+                        .catch(function (error) {
+                            console.error('Oops, something went wrong!', error);
+                        });
+                    break;
+                case 'mini-timeline':
+                    options = {
+                        style: {
+                          width: 'fit-content',
+                            borderRadius: 0
+                        },
+                        pixelRatio: 2,
+                    }
+
+                    htmlToImage.toPng(ref, options)
+                        .then(function (dataUrl) {
+                            const link = document.createElement('a');
+                            link.href = dataUrl;
+                            link.download = `${Math.floor(Math.random()*100)}_Timeline`;
+                            link.click();
+                        })
+                        .catch(function (error) {
+                            console.error('Oops, something went wrong!', error);
+                        });
+                    break;
+            }
         }
     };
 
@@ -201,10 +226,14 @@ function App() {
                                     month={index+1}
                                     storeMonthData={StoreMonthData}
                                     handleLoading={handleChildLoading}
+                                    saveAsImage={exportAsPng}
                                 />
                             )
                         }
-                        <MiniTimeline data={miniTimelineData.sort(idAscending)}/>
+                        <MiniTimeline
+                            data={miniTimelineData.sort(idAscending)}
+                            saveAsImage={exportAsPng}
+                        />
                         <Box mt={6}><hr/></Box>
                         {
                             currentYear === data.year ?
