@@ -1,30 +1,32 @@
 import {Td, Tooltip, Text} from "@chakra-ui/react";
 
-const TableElement = (props) => {
+const TableElement = ({name, artist, scrobbles, imageLarge, url}) => {
+    const HandleLink = (url) => {
+        window.open(url, '_blank')
+    }
+
     return (
-        <Tooltip textAlign={'center'} label={
+        <Tooltip textAlign={'center'}  label={
             <>
-                {props.name} - {props.artist}
+                {name} - {artist}
                 <br/>
-                <strong>{props.scrobbles} {props.scrobbles === 1 ? "scrobble" : "scrobbles"}</strong>
+                <strong>{scrobbles} {scrobbles === 1 ? "scrobble" : "scrobbles"}</strong>
             </>
         } placement={'bottom'} hasArrow={true}>
-            <Td textAlign={'center'} p={0}>
-                <a target={'_blank'} href={props.url} rel="noreferrer">
-                    {
-                        props.imageLarge === undefined || props.imageLarge === "" ?
-                            <div className={'image-container'} style={{overflow: 'hidden'}}>
-                                <img src={'https://lastfm.freetls.fastly.net/i/u/300x300/32f2b94ebebb2742709006790b9209b9.png'}/>
-                                <Text className={'overlay-text'} fontSize={'xs'} isTruncated>
-                                    {props.name}<br/><strong>{props.artist}</strong>
-                                </Text>
-                            </div>
-                            :
-                            <div>
-                                <img src={props.imageLarge}/>
-                            </div>
-                    }
-                </a>
+            <Td textAlign={'center'} p={0} onClick={() => {HandleLink(url)}} cursor={'pointer'}>
+                {
+                    imageLarge === undefined || imageLarge === "" ?
+                        <div className={'image-container'} style={{overflow: 'hidden'}}>
+                            <img src={'https://lastfm.freetls.fastly.net/i/u/300x300/32f2b94ebebb2742709006790b9209b9.png'}/>
+                            <Text className={'overlay-text'} fontSize={'xs'} isTruncated>
+                                {name}<br/><strong>{artist}</strong>
+                            </Text>
+                        </div>
+                        :
+                        <div>
+                            <img src={imageLarge}/>
+                        </div>
+                }
             </Td>
         </Tooltip>
     )

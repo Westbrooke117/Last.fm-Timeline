@@ -2,7 +2,7 @@ import './App.css'
 import {
     Alert, AlertIcon,
     Box,
-    Button, calc,
+    Button,
     Container, Fade,
     Heading,
     HStack,
@@ -12,7 +12,7 @@ import {
     NumberInput,
     NumberInputField,
     NumberInputStepper, Progress, SlideFade,
-    Text, useDisclosure,
+    Text,
 } from "@chakra-ui/react";
 import {useEffect, useState} from "react";
 import axios from "axios";
@@ -21,9 +21,11 @@ import {ArrowBackIcon, ArrowForwardIcon} from '@chakra-ui/icons'
 import {MiniTimeline} from "./components/MiniTimeline.jsx";
 import * as htmlToImage from "html-to-image";
 
+import ReactGA from "react-ga4";
+ReactGA.initialize("G-CBYVZWEHHT");
 
 function App() {
-    const exportAsPng = (ref, year, user, config) => {
+    const exportAsPng = (ref, user, year, month, config) => {
         if (ref) {
             let options;
             switch (config){
@@ -40,7 +42,7 @@ function App() {
                         .then(function (dataUrl) {
                             const link = document.createElement('a');
                             link.href = dataUrl;
-                            link.download = `${Math.floor(Math.random()*100)}_4x4`;
+                            link.download = `${user}_${year}_${month.toString().padStart(2,'0')}`;
                             link.click();
                         })
                         .catch(function (error) {
@@ -60,7 +62,7 @@ function App() {
                         .then(function (dataUrl) {
                             const link = document.createElement('a');
                             link.href = dataUrl;
-                            link.download = `${Math.floor(Math.random()*100)}_Timeline`;
+                            link.download = `${user}_${year}`;
                             link.click();
                         })
                         .catch(function (error) {
@@ -113,8 +115,8 @@ function App() {
     }
 
     useEffect(() => {
-        setInputData({...inputData, year: data.year})
         setChildrenLoading(true)
+        setInputData({...inputData, year: data.year})
     },[data.year])
 
     const FormErrorChecker = async (name) => {
@@ -171,6 +173,7 @@ function App() {
                 e.preventDefault()
                 const inputIsValid = await FormErrorChecker(inputData.username);
                 if (inputIsValid) {
+                    setChildrenLoading(true)
                     setData({ username: inputData.username, year: inputData.year });
                     setErrorState(false);
                 } else {
@@ -217,54 +220,58 @@ function App() {
             <div>
                 {
                     <SlideFade in={!childrenLoading}>
-                        {
-                            generateMonthArray().map((month, index) =>
-                                <AlbumGrid
-                                    key={`month${index+1}`}
-                                    user={data.username}
-                                    year={data.year}
-                                    month={index+1}
-                                    storeMonthData={StoreMonthData}
-                                    handleLoading={handleChildLoading}
-                                    saveAsImage={exportAsPng}
-                                />
-                            )
-                        }
-                        <MiniTimeline
-                            data={miniTimelineData.sort(idAscending)}
-                            saveAsImage={exportAsPng}
-                        />
-                        <Box mt={6}><hr/></Box>
-                        {
-                            currentYear === data.year ?
-                                <HStack mt={10} mb={10} alignItems={'center'} justifyContent={'space-between'}>
-                                    <a href={"#top"}>
-                                        <Button  onClick={() => setData({...data, year: data.year-1})} leftIcon={<ArrowBackIcon />} fontSize={28} size={'lg'} fontWeight={'bold'} colorScheme='blue' variant='ghost'>Last Year ({data.year-1})</Button>
-                                    </a>
-                                    <div style={{display: 'flex', justifyContent: "center"}}>
-                                        <a href={"#top"}><Button size={'lg'} colorScheme='green' variant={'ghost'}>Go Back to Top</Button></a>
-                                    </div>
+                        <Box>
+                            {
+                                generateMonthArray().map((month, index) =>
+                                    <AlbumGrid
+                                        key={`month${index+1}`}
+                                        user={data.username}
+                                        year={data.year}
+                                        month={index+1}
+                                        storeMonthData={StoreMonthData}
+                                        handleLoading={handleChildLoading}
+                                        saveAsImage={exportAsPng}
+                                    />
+                                )
+                            }
+                            <MiniTimeline
+                                data={miniTimelineData.sort(idAscending)}
+                                saveAsImage={exportAsPng}
+                                year={data.year}
+                                user={data.username}
+                            />
+                            <Box mt={6}><hr/></Box>
+                            {
+                                currentYear === data.year ?
+                                    <HStack mt={10} mb={10} alignItems={'center'} justifyContent={'space-between'}>
+                                        <a href={"#top"}>
+                                            <Button  onClick={() => setData({...data, year: data.year-1})} leftIcon={<ArrowBackIcon />} fontSize={28} size={'lg'} fontWeight={'bold'} colorScheme='blue' variant='ghost'>Last Year ({data.year-1})</Button>
+                                        </a>
+                                        <div style={{display: 'flex', justifyContent: "center"}}>
+                                            <a href={"#top"}><Button size={'lg'} colorScheme='green' variant={'ghost'}>Go Back to Top</Button></a>
+                                        </div>
 
-                                    {/*To maintain alignment*/}
-                                    <a href={'#top'} style={{visibility: 'hidden'}}>
-                                        <Button onClick={() => setData({...data, year: data.year+1})} rightIcon={<ArrowForwardIcon />} fontSize={28} fontWeight={'bold'} size={'lg'} colorScheme='blue' variant='ghost'>Next Year ({data.year+1})</Button>
-                                    </a>
-                                </HStack>
+                                        {/*To maintain alignment*/}
+                                        <a href={'#top'} style={{visibility: 'hidden'}}>
+                                            <Button onClick={() => setData({...data, year: data.year+1})} rightIcon={<ArrowForwardIcon />} fontSize={28} fontWeight={'bold'} size={'lg'} colorScheme='blue' variant='ghost'>Next Year ({data.year+1})</Button>
+                                        </a>
+                                    </HStack>
 
-                                :
+                                    :
 
-                                <HStack mt={10} mb={10} alignItems={'center'} justifyContent={'space-between'}>
-                                    <a href={"#top"}>
-                                        <Button onClick={() => setData({...data, year: data.year-1})} leftIcon={<ArrowBackIcon />} fontSize={28} fontWeight={'bold'} size={'lg'} colorScheme='blue' variant='ghost'>Last Year ({data.year-1})</Button>
-                                    </a>
-                                    <div style={{display: 'flex', justifyContent: "center"}}>
-                                        <a href={"#top"}><Button size={'lg'} colorScheme='green' variant={'ghost'}>Go Back to Top</Button></a>
-                                    </div>
-                                    <a href={'#top'}>
-                                        <Button onClick={() => setData({...data, year: data.year+1})} rightIcon={<ArrowForwardIcon />} fontSize={28} fontWeight={'bold'} size={'lg'} colorScheme='blue' variant='ghost'>Next Year ({data.year+1})</Button>
-                                    </a>
-                                </HStack>
-                        }
+                                    <HStack mt={10} mb={10} alignItems={'center'} justifyContent={'space-between'}>
+                                        <a href={"#top"}>
+                                            <Button onClick={() => setData({...data, year: data.year-1})} leftIcon={<ArrowBackIcon />} fontSize={28} fontWeight={'bold'} size={'lg'} colorScheme='blue' variant='ghost'>Last Year ({data.year-1})</Button>
+                                        </a>
+                                        <div style={{display: 'flex', justifyContent: "center"}}>
+                                            <a href={"#top"}><Button size={'lg'} colorScheme='green' variant={'ghost'}>Go Back to Top</Button></a>
+                                        </div>
+                                        <a href={'#top'}>
+                                            <Button onClick={() => setData({...data, year: data.year+1})} rightIcon={<ArrowForwardIcon />} fontSize={28} fontWeight={'bold'} size={'lg'} colorScheme='blue' variant='ghost'>Next Year ({data.year+1})</Button>
+                                        </a>
+                                    </HStack>
+                            }
+                        </Box>
                     </SlideFade>
                 }
             </div>

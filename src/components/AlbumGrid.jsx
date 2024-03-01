@@ -1,9 +1,9 @@
 import axios from "axios";
 import {useEffect, useRef, useState} from "react";
 import {
-    Box, Button,
+    Box,
     Fade,
-    Heading, Link, Stack,
+    Heading, Link,
     Table,
     TableContainer,
     Tbody,
@@ -16,24 +16,14 @@ const AlbumGrid = (props) => {
     const [monthData, setMonthData] = useState([{}])
     let months = ["January","February","March","April","May","June","July","August","September","October","November","December"]
 
-    const month = props.month;
-    const year = props.year;
-
     const formatDate = () => {
-        let strMonth = month.toString();
-        let nextMonth = (month+1).toString()
+        const startOfMonth = Date.UTC(props.year, props.month-1, 1) / 1000;
+        const endOfMonth = Date.UTC(props.year, props.month, 1) / 1000;
 
-        if (strMonth.length === 1 && strMonth !== '9'){
-            strMonth = `0${month}`
-            nextMonth = `0${month+1}`
-        }
+        return [startOfMonth, endOfMonth];
+    };
 
-        return [
-            Date.parse(`${year}-${strMonth}-01`)/1000,
-            nextMonth === '13' ? Date.parse(`${year+1}-01-01`)/1000 : Date.parse(`${year}-${nextMonth}-01`)/1000
-        ]
-    }
-    const [monthStart, monthEnd] = formatDate()
+    const [monthStart, monthEnd] = formatDate();
 
 
     useEffect(() => {
@@ -58,33 +48,13 @@ const AlbumGrid = (props) => {
                         props.storeMonthData({
                             id: props.month-1,
                             monthText: months[props.month-1].substring(0,3),
-                            albums: [{
-                                name: data[0].name,
-                                artist: data[0].artist,
-                                scrobbles: data[0].scrobbles,
-                                image: data[0].image.large
-
-                            }, {
-                                name: data[1].name,
-                                artist: data[1].artist,
-                                scrobbles: data[1].scrobbles,
-                                image: data[1].image.large
-                            }, {
-                                name: data[2].name,
-                                artist: data[2].artist,
-                                scrobbles: data[2].scrobbles,
-                                image: data[2].image.large
-                            }, {
-                                name: data[3].name,
-                                artist: data[3].artist,
-                                scrobbles: data[3].scrobbles,
-                                image: data[3].image.large
-                            }, {
-                                name: data[4].name,
-                                artist: data[4].artist,
-                                scrobbles: data[4].scrobbles,
-                                image: data[4].image.large
-                            }]
+                            albums: data.slice(0, 5).map((item) => ({
+                                name: item?.name,
+                                artist: item?.artist,
+                                scrobbles: item?.scrobbles,
+                                url: item?.url,
+                                image: item?.image?.large
+                            }))
                         })
                         setMonthData(data)
                         props.handleLoading()
@@ -161,7 +131,7 @@ const AlbumGrid = (props) => {
                 }
                 <hr style={{ paddingBottom: "15px" }} />
                 {
-                    monthData[1] &&
+                    monthData[1] ?
                     <>
                         <TableContainer borderRadius={10} ref={gridRef}>
                             <Fade in={true}>
@@ -189,8 +159,29 @@ const AlbumGrid = (props) => {
                                 </Table>
                             </Fade>
                         </TableContainer>
-                        <Link color={'gray.500'} mt={3} display={'flex'} justifyContent={'center'} onClick={() => {props.saveAsImage(gridRef.current, undefined, undefined, 'grid')}}>Save as Image</Link>
+                        <Link color={'gray.500'} mt={3} display={'flex'} justifyContent={'center'} onClick={() => {
+                            props.saveAsImage(
+                                gridRef.current,
+                                props.user,
+                                props.year,
+                                props.month,
+                                'grid'
+                            )}}
+                        >Save as Image</Link>
                     </>
+                     :
+                        <TableContainer borderRadius={10}>
+                            <Table size={"sm"} variant={"unstyled"} maxW={1200}>
+                                <Tbody>
+                                    <Tr>
+                                        <Td w={300} h={150}></Td>
+                                        <Td w={300} h={150}></Td>
+                                        <Td w={300} h={150}></Td>
+                                        <Td w={300} h={150}></Td>
+                                    </Tr>
+                                </Tbody>
+                            </Table>
+                        </TableContainer>
                 }
             </Box>
             {headingAlignment === "left" && (
