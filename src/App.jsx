@@ -231,8 +231,6 @@ function App() {
                                         storeMonthData={StoreMonthData}
                                         handleLoading={handleChildLoading}
                                         saveAsImage={exportAsPng}
-                                        doesAlbumImageExistAlready={DoesAlbumImageExistAlready}
-                                        cacheAlbumImageURL={CacheAlbumImageURL}
                                     />
                                 )
                             }
