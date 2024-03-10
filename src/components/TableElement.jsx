@@ -17,7 +17,7 @@ const TableElement = ({name, artist, scrobbles, imageLarge, imageSmall, url}) =>
             <Td textAlign={'center'} p={0} onClick={() => {HandleLink(url)}} cursor={'pointer'}>
                 {
                     imageLarge === undefined || imageLarge === "" ?
-                        <Box className={'image-container'} style={{overflow: 'hidden'}}>
+                        <Box maxH={'168.967px'} className={'image-container'} style={{overflow: 'hidden'}}>
                             <LazyLoadImage
                                 src={'https://lastfm.freetls.fastly.net/i/u/300x300/32f2b94ebebb2742709006790b9209b9.png'}
                                 effect={'blur'}
