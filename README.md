@@ -9,9 +9,9 @@ An interactive tool to view your last.fm listening history month-by-month.
 - Lazy loading for images to prevent delayed image loading
 
 ## Future Features 📝
-- Add a share button to share content to r/last.fm on Reddit
-- Show a month-by-month breakdown of an albums listening stats when clicking on one
-- Reduce number of API calls by caching album image urls
+- Add a share button to share content to social media
+- Add custom album cover support (at cost of slower speeds)
+- More themes for mini timeline
 
 ## Current Known Bugs 🐞
 - Form error messages appearing after the timeline has loaded causes it to shift downward slightly
