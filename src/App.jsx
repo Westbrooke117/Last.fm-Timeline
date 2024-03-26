@@ -19,66 +19,17 @@ import axios from "axios";
 import {AlbumGrid} from "./components/AlbumGrid.jsx";
 import {ArrowBackIcon, ArrowForwardIcon} from '@chakra-ui/icons'
 import {MiniTimeline} from "./components/MiniTimeline.jsx";
-import * as htmlToImage from "html-to-image";
 
+//Google Analytics configuration
 import ReactGA from "react-ga4";
 ReactGA.initialize("G-CBYVZWEHHT");
 
-function App() {
-    const exportAsPng = (ref, user, year, month, config) => {
-        if (ref) {
-            let options;
-            switch (config){
-                case 'grid':
-                    options = {
-                        style: {
-                            borderRadius: 0
-                        },
-                        canvasWidth: 1200,
-                        canvasHeight: 1200
-                    }
-
-                    htmlToImage.toPng(ref, options)
-                        .then(function (dataUrl) {
-                            const link = document.createElement('a');
-                            link.href = dataUrl;
-                            link.download = `${user}_${year}_${month.toString().padStart(2,'0')}`;
-                            link.click();
-                        })
-                        .catch(function (error) {
-                            console.error('Oops, something went wrong!', error);
-                        });
-                    break;
-                case 'mini-timeline':
-                    options = {
-                        style: {
-                          width: 'fit-content',
-                            borderRadius: 0
-                        },
-                        pixelRatio: 2,
-                    }
-
-                    htmlToImage.toPng(ref, options)
-                        .then(function (dataUrl) {
-                            const link = document.createElement('a');
-                            link.href = dataUrl;
-                            link.download = `${user}_${year}`;
-                            link.click();
-                        })
-                        .catch(function (error) {
-                            console.error('Oops, something went wrong!', error);
-                        });
-                    break;
-            }
-        }
-    };
-
-    //Used for form validation and setting proper state
+const App = () => {
+    //Used for form validation and setting data state
     const [inputData, setInputData] = useState({
         username: "",
         year: 2024
     })
-    let unixTimeRegistered;
 
     //Actual state used for API requests
     const [data, setData] = useState({
@@ -92,7 +43,7 @@ function App() {
     let totalMonths;
     let loadedMonths = 0;
 
-    const handleChildLoading = () => {
+    const monthDataLoaded = () => {
         loadedMonths += 1
 
         let currentLoadingPercentage = (loadedMonths / totalMonths * 100)
@@ -106,9 +57,9 @@ function App() {
     const [errorMessage, setErrorMessage] = useState("")
     const [hasError, setErrorState] = useState(false)
     const generateMonthArray = () => {
-        let currentMonth = new Date().getMonth()+1
+        let currentMonthInt = new Date().getMonth()+1
 
-        let monthArray = new Array(data.year === currentYear ? currentMonth : 12).fill(0);
+        let monthArray = new Array(data.year === currentYear ? currentMonthInt : 12).fill(0);
         totalMonths = monthArray.length;
 
         return monthArray;
@@ -126,6 +77,7 @@ function App() {
             setErrorMessage("Username must be between 2 and 15 characters");
             return false;
         }
+
         const pattern = /^[a-zA-Z][a-zA-Z0-9_-]*$/;
         if (!pattern.test(name)) {
             setErrorMessage("Username must begin with a letter and contain only letters, numbers, '_' or '-'");
@@ -134,11 +86,8 @@ function App() {
 
         // To ensure user actually exists
         try {
-            const response = await axios.get(`https://ws.audioscrobbler.com/2.0/?method=user.getinfo&user=${name}&api_key=82d112e473f59ade0157abe4a47d4eb5&format=json`)
-            unixTimeRegistered = {
-                year: new Date(response.data.user.registered['#text']*1000).getFullYear(),
-                month: new Date(response.data.user.registered['#text']*1000).getMonth()
-            }
+            await axios.get(`https://ws.audioscrobbler.com/2.0/?method=user.getinfo&user=${name}&api_key=82d112e473f59ade0157abe4a47d4eb5&format=json`)
+
             setErrorMessage("");
             return true;
         } catch (error) {
@@ -173,9 +122,9 @@ function App() {
                 e.preventDefault()
                 const inputIsValid = await FormErrorChecker(inputData.username);
                 if (inputIsValid) {
-                    setChildrenLoading(true)
-                    setData({ username: inputData.username, year: inputData.year });
                     setErrorState(false);
+                    setData({ username: inputData.username, year: inputData.year });
+                    setChildrenLoading(true)
                 } else {
                     setErrorState(true);
                 }
@@ -229,14 +178,12 @@ function App() {
                                         year={data.year}
                                         month={index+1}
                                         storeMonthData={StoreMonthData}
-                                        handleLoading={handleChildLoading}
-                                        saveAsImage={exportAsPng}
+                                        monthDataLoaded={monthDataLoaded}
                                     />
                                 )
                             }
                             <MiniTimeline
                                 data={miniTimelineData.sort(idAscending)}
-                                saveAsImage={exportAsPng}
                                 year={data.year}
                                 user={data.username}
                             />
