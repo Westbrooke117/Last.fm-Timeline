@@ -65,13 +65,19 @@ const App = () => {
         return monthArray;
     }
 
+    // Mini Timeline will load a column when its corresponding album grid has finished loading
+    const [miniTimelineData, setMiniTimelineData] = useState([])
+    const StoreMonthData = (object) => {
+        setMiniTimelineData((prevMiniTimelineData) => [...prevMiniTimelineData, object]);
+    }
+
     useEffect(() => {
         setChildrenLoading(true)
+        setMiniTimelineData([])
         setInputData({...inputData, year: data.year})
     },[data.year])
 
     const FormErrorChecker = async (name) => {
-
         // To comply with last.fm username conventions
         if (name.length > 15 || name.length < 2) {
             setErrorMessage("Username must be between 2 and 15 characters");
@@ -87,7 +93,6 @@ const App = () => {
         // To ensure user actually exists
         try {
             await axios.get(`https://ws.audioscrobbler.com/2.0/?method=user.getinfo&user=${name}&api_key=82d112e473f59ade0157abe4a47d4eb5&format=json`)
-
             setErrorMessage("");
             return true;
         } catch (error) {
@@ -104,13 +109,6 @@ const App = () => {
             return 1;
         }
         return 0;
-    }
-
-    const [miniTimelineData, setMiniTimelineData] = useState([])
-    let tempData = [];
-    const StoreMonthData = (object) => {
-        tempData.push(object)
-        setMiniTimelineData(tempData)
     }
 
     let currentYear = new Date().getFullYear()
