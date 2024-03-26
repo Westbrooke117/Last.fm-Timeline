@@ -10,7 +10,7 @@ An interactive tool to view your last.fm listening history month-by-month.
 
 ## Future Features 📝
 - Add a share button to share content to social media
-- Add custom album cover support (at cost of slower speeds)
+- Add support for custom album grid size (at cost of slower speeds)
 - More themes for mini timeline
 
 ## Current Known Bugs 🐞
