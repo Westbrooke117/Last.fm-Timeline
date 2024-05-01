@@ -1,6 +1,6 @@
 import {Td, Tooltip, Text, Box} from "@chakra-ui/react";
 import { LazyLoadImage } from 'react-lazy-load-image-component';
-import 'react-lazy-load-image-component/src/effects/blur.css';
+import 'react-lazy-load-image-component/src/effects/black-and-white.css';
 
 const TableElement = ({name, artist, scrobbles, imageLarge, imageSmall, url}) => {
     const HandleLink = (url) => {
@@ -20,7 +20,7 @@ const TableElement = ({name, artist, scrobbles, imageLarge, imageSmall, url}) =>
                         <Box maxH={'168.967px'} className={'image-container'} style={{overflow: 'hidden'}}>
                             <LazyLoadImage
                                 src={'https://lastfm.freetls.fastly.net/i/u/300x300/32f2b94ebebb2742709006790b9209b9.png'}
-                                effect={'blur'}
+                                effect={'black-and-white'}
                             />
                             <Text className={'overlay-text'} fontSize={'xs'} isTruncated>
                                 {name}<br/><strong>{artist}</strong>
@@ -32,7 +32,7 @@ const TableElement = ({name, artist, scrobbles, imageLarge, imageSmall, url}) =>
                             <LazyLoadImage
                                 placeholderSrc={imageSmall}
                                 src={imageLarge}
-                                effect={'blur'}
+                                effect={'black-and-white'}
                             />
                         </Box>
                 }
