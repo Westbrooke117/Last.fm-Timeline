@@ -16,6 +16,7 @@ const TableElement = ({name, artist, scrobbles, imageLarge, imageSmall, url}) =>
         } placement={'bottom'} hasArrow={true}>
             <Td textAlign={'center'} p={0} onClick={() => {HandleLink(url)}} cursor={'pointer'}>
                 {
+                    //Check if image link is empty or does not exist
                     imageLarge === undefined || imageLarge === "" ?
                         <Box maxH={'168.967px'} className={'image-container'} style={{overflow: 'hidden'}}>
                             <LazyLoadImage

@@ -11,14 +11,15 @@ import {
     Tr
 } from "@chakra-ui/react";
 import {TableElement} from "./TableElement.jsx";
+import {ComponentImageExport} from "../ComopnentImageExport.jsx";
 
-const AlbumGrid = (props) => {
+const AlbumGrid = ({year, month, user, storeMonthData, monthDataLoaded}) => {
     const [monthData, setMonthData] = useState([{}])
     let months = ["January","February","March","April","May","June","July","August","September","October","November","December"]
 
     const formatDate = () => {
-        const startOfMonth = Date.UTC(props.year, props.month-1, 1) / 1000;
-        const endOfMonth = Date.UTC(props.year, props.month, 1) / 1000;
+        const startOfMonth = Date.UTC(year, month-1, 1) / 1000;
+        const endOfMonth = Date.UTC(year, month, 1) / 1000;
 
         return [startOfMonth, endOfMonth];
     };
@@ -28,7 +29,7 @@ const AlbumGrid = (props) => {
 
     useEffect(() => {
         setMonthData([{}])
-        axios.get(`https://ws.audioscrobbler.com/2.0/?method=user.getweeklyalbumchart&user=${props.user}&api_key=82d112e473f59ade0157abe4a47d4eb5&format=json&limit=16&from=${monthStart}&to=${monthEnd}`)
+        axios.get(`https://ws.audioscrobbler.com/2.0/?method=user.getweeklyalbumchart&user=${user}&api_key=82d112e473f59ade0157abe4a47d4eb5&format=json&limit=16&from=${monthStart}&to=${monthEnd}`)
             .then((response) => {
                 let monthAlbumData = response.data.weeklyalbumchart.album.map(async (album) => {
                     const { small, large } = await getAlbumImages(album.artist['#text'], album.name, album.mbid);
@@ -38,16 +39,16 @@ const AlbumGrid = (props) => {
                         scrobbles: parseInt(album.playcount),
                         artist: album.artist['#text'],
                         image: { small, large },
-                        mbid: album.mbid
+                        musicbrainzId: album.mbid
                     };
                 });
 
                 // Use Promise.all to wait for all images to be fetched
                 Promise.all(monthAlbumData)
                     .then(data => {
-                        props.storeMonthData({
-                            id: props.month-1,
-                            monthText: months[props.month-1].substring(0,3),
+                        storeMonthData({
+                            id: month-1,
+                            monthText: months[month-1].substring(0,3),
                             albums: data.slice(0, 5).map((item) => ({
                                 name: item?.name,
                                 artist: item?.artist,
@@ -57,7 +58,7 @@ const AlbumGrid = (props) => {
                             }))
                         })
                         setMonthData(data)
-                        props.handleLoading()
+                        monthDataLoaded()
                     })
                     .catch(error => console.error(error));
             });
@@ -76,13 +77,13 @@ const AlbumGrid = (props) => {
                 };
             }
         }
-    }, [props.user, props.year]);
+    }, [user, year]);
 
-    let gridSize = new Array(4).fill(0) //4
+    let gridSize = new Array(4).fill(0)
     let cellIndex = 0;
 
     let headingAlignment = 'left';
-    if (props.month % 2 !== 0) headingAlignment = 'right'
+    if (month % 2 !== 0) headingAlignment = 'right'
 
     const gridRef = useRef(null)
 
@@ -115,7 +116,7 @@ const AlbumGrid = (props) => {
                             maxW={1200}
                             pb={2}
                         >
-                            {months[props.month - 1]}
+                            {months[month - 1]}
                         </Heading>
                     </>
                     :
@@ -125,7 +126,7 @@ const AlbumGrid = (props) => {
                             maxW={1200}
                             pb={2}
                         >
-                            {months[props.month - 1]}
+                            {months[month - 1]}
                         </Heading>
                     </>
                 }
@@ -159,14 +160,14 @@ const AlbumGrid = (props) => {
                                 </Table>
                             </Fade>
                         </TableContainer>
-                        <Link color={'gray.500'} mt={3} display={'flex'} justifyContent={'center'} onClick={() => {
-                            props.saveAsImage(
-                                gridRef.current,
-                                props.user,
-                                props.year,
-                                props.month,
-                                'grid'
-                            )}}
+                        <Link color={'gray.500'} mt={3} display={'flex'} justifyContent={'center'} onClick={() =>
+                            ComponentImageExport({
+                                ref: gridRef.current,
+                                component: 'album-grid',
+                                username: user,
+                                year: year,
+                                month: month})
+                        }
                         >Save as Image</Link>
                     </>
                      :

@@ -1,8 +1,9 @@
-import {HStack, VStack, Image, Tag, Tooltip, Link, Button, StackDivider, Box, Text, LinkBox} from "@chakra-ui/react";
+import {HStack, VStack, Image, Tag, Tooltip, Link, Button, StackDivider, Box, Text} from "@chakra-ui/react";
 import {useRef, useState} from "react";
 import {EditIcon} from "@chakra-ui/icons";
+import {ComponentImageExport} from "../ComopnentImageExport.jsx";
 
-const MiniTimeline = (props) => {
+const MiniTimeline = ({user, year, data}) => {
     const miniTimelineRef = useRef(null)
     const [backgroundColor, setBackgroundColor] = useState('gray.800')
     const [customBackgroundColor, setCustomBackgroundColor] = useState(null)
@@ -10,6 +11,18 @@ const MiniTimeline = (props) => {
     const HandleImageClick = (url) => {
         window.open(url, '_blank')
     }
+
+    const colorPresets = [
+        'gray.800',
+        '#664d00',
+        '#6e2a0c',
+        '#691312',
+        '#5d0933',
+        '#291938',
+        '#042d3a',
+        '#12403c',
+        '#475200'
+    ]
 
     return (
         <div style={{marginTop: 50}}>
@@ -23,7 +36,7 @@ const MiniTimeline = (props) => {
                         <Tag textAlign={'center'} w={10} h={104.667}>4th</Tag>
                         <Tag textAlign={'center'} w={10} h={104.667}>5th</Tag>
                     </VStack>
-                    {props.data.map((month) => (
+                    {data.map((month) => (
                         <VStack key={month.id}>
                             <p>{month.monthText}</p>
                             {month.albums && month.albums.length > 0 ? (
@@ -73,30 +86,28 @@ const MiniTimeline = (props) => {
                 </HStack>
             </div>
             <HStack justifyContent={'center'} alignItems={'center'} mt={3}>
-                <Link onClick={() => props.saveAsImage(
-                    miniTimelineRef.current,
-                    props.user,
-                    props.year,
-                    undefined,
-                    'mini-timeline'
+                <Link onClick={() => ComponentImageExport(
+                    {
+                        ref: miniTimelineRef.current,
+                        component: 'mini-timeline',
+                        username: user,
+                        year: year,
+                        month: undefined,
+                    }
                 )} color={'gray.500'} textAlign={'center'}>Save as Image</Link>
             </HStack>
             <HStack justifyContent={'center'} mt={4}>
-                <Button border={'1px solid #3f444e'} variant={'unstyled'} onClick={() => setBackgroundColor('gray.800')} backgroundColor={'gray.800'} borderRadius={20}></Button>
-                <Button border={'1px solid #3f444e'} variant={'unstyled'} onClick={() => setBackgroundColor('#664d00')} backgroundColor={'#664d00'} borderRadius={20}></Button>
-                <Button border={'1px solid #3f444e'} variant={'unstyled'} onClick={() => setBackgroundColor('#6e2a0c')} backgroundColor={'#6e2a0c'} borderRadius={20}></Button>
-                <Button border={'1px solid #3f444e'} variant={'unstyled'} onClick={() => setBackgroundColor('#691312')} backgroundColor={'#691312'} borderRadius={20}></Button>
-                <Button border={'1px solid #3f444e'} variant={'unstyled'} onClick={() => setBackgroundColor('#5d0933')} backgroundColor={'#5d0933'} borderRadius={20}></Button>
-                <Button border={'1px solid #3f444e'} variant={'unstyled'} onClick={() => setBackgroundColor('#291938')} backgroundColor={'#291938'} borderRadius={20}></Button>
-                <Button border={'1px solid #3f444e'} variant={'unstyled'} onClick={() => setBackgroundColor('#042d3a')} backgroundColor={'#042d3a'} borderRadius={20}></Button>
-                <Button border={'1px solid #3f444e'} variant={'unstyled'} onClick={() => setBackgroundColor('#12403c')} backgroundColor={'#12403c'} borderRadius={20}></Button>
-                <Button border={'1px solid #3f444e'} variant={'unstyled'} onClick={() => setBackgroundColor('#475200')} backgroundColor={'#475200'} borderRadius={20}></Button>
+                {
+                    colorPresets.map(color => (
+                        <Button border={'1px solid #3f444e'} variant={'unstyled'} onClick={() => setBackgroundColor(color)} backgroundColor={color} borderRadius={20}></Button>
+                    ))
+                }
                 <StackDivider/>
                 <EditIcon color={'#718096'}/>
                 <Box className={'colorInputWrapper'} backgroundColor={customBackgroundColor} border={'1px solid #3f444e'} w={10} h={10} borderRadius={20} cursor={'pointer'}>
                     <input className={'colorInput'} onClick={(e) => {
                         setBackgroundColor(e.target.value)
-                        setCustomeBackgroundColor(e.target.value)
+                        setCustomBackgroundColor(e.target.value)
                     }} onChange={(e) => {
                         setBackgroundColor(e.target.value)
                         setCustomBackgroundColor(e.target.value)
