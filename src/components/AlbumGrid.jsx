@@ -13,7 +13,7 @@ import {
 import {TableElement} from "./TableElement.jsx";
 import {ComponentImageExport} from "../ComopnentImageExport.jsx";
 
-const AlbumGrid = ({year, month, user, storeMonthData, monthDataLoaded}) => {
+const AlbumGrid = ({year, month, user, storeMonthData, monthDataLoaded, storeAllMonthData, showChartModal, setChartDetails}) => {
     const [monthData, setMonthData] = useState([{}])
     let months = ["January","February","March","April","May","June","July","August","September","October","November","December"]
 
@@ -29,9 +29,15 @@ const AlbumGrid = ({year, month, user, storeMonthData, monthDataLoaded}) => {
 
     useEffect(() => {
         setMonthData([{}])
-        axios.get(`https://ws.audioscrobbler.com/2.0/?method=user.getweeklyalbumchart&user=${user}&api_key=82d112e473f59ade0157abe4a47d4eb5&format=json&limit=16&from=${monthStart}&to=${monthEnd}`)
+        axios.get(`https://ws.audioscrobbler.com/2.0/?method=user.getweeklyalbumchart&user=${user}&api_key=82d112e473f59ade0157abe4a47d4eb5&format=json&from=${monthStart}&to=${monthEnd}`)
             .then((response) => {
-                let monthAlbumData = response.data.weeklyalbumchart.album.map(async (album) => {
+                // Store all albums for chart population
+                let allResponses = response.data.weeklyalbumchart.album
+                storeAllMonthData(month-1 ,allResponses)
+
+                // Only show top 16 albums (4x4) on the album grid
+                let topAlbums = [...allResponses.slice(0, 16)]
+                let monthAlbumData = topAlbums.map(async (album) => {
                     const { small, large } = await getAlbumImages(album.artist['#text'], album.name, album.mbid);
                     return {
                         name: album.name,
@@ -152,6 +158,9 @@ const AlbumGrid = ({year, month, user, storeMonthData, monthDataLoaded}) => {
                                                             name={monthData[cellIndex].name}
                                                             url={monthData[cellIndex].url}
                                                             scrobbles={monthData[cellIndex++].scrobbles}
+                                                            showChartModal={showChartModal}
+                                                            setChartDetails={setChartDetails}
+                                                            year={year}
                                                         />
                                                 ))}
                                             </Tr>

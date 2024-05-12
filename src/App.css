@@ -53,3 +53,7 @@ option {
 .colorInput::-moz-focus-inner {
     border: none; /* Removing the inner focus border in Firefox */
 }
+
+.menu-item-list:hover {
+    cursor: pointer;
+}

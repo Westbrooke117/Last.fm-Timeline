@@ -3,13 +3,18 @@ import {useRef, useState} from "react";
 import {EditIcon} from "@chakra-ui/icons";
 import {ComponentImageExport} from "../ComopnentImageExport.jsx";
 
-const MiniTimeline = ({user, year, data}) => {
+const MiniTimeline = ({user, year, data, setChartDetails, showChartModal}) => {
     const miniTimelineRef = useRef(null)
     const [backgroundColor, setBackgroundColor] = useState('gray.800')
     const [customBackgroundColor, setCustomBackgroundColor] = useState(null)
 
-    const HandleImageClick = (url) => {
-        window.open(url, '_blank')
+    const HandleClick = (albumName, artistName) => {
+        setChartDetails({
+            albumName: albumName,
+            artistName: artistName,
+            year: year
+        })
+        showChartModal()
     }
 
     const colorPresets = [
@@ -50,7 +55,7 @@ const MiniTimeline = ({user, year, data}) => {
                                             </>
                                         ) : "No album available"
                                     } placement={'bottom'} hasArrow={true}>
-                                        <Box onClick={() => HandleImageClick(album.url)} cursor={'pointer'}>
+                                        <Box onClick={() => HandleClick(album.name, album.artist)} cursor={'pointer'}>
                                             {album ? (
                                                 album.image === undefined || album.image === "" ?
                                                     <Box className={'image-container'} overflow={'hidden'} maxH={104.667} maxW={104.667} borderRadius={5}>

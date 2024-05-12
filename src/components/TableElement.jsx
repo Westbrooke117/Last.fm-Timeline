@@ -2,9 +2,14 @@ import {Td, Tooltip, Text, Box} from "@chakra-ui/react";
 import { LazyLoadImage } from 'react-lazy-load-image-component';
 import 'react-lazy-load-image-component/src/effects/black-and-white.css';
 
-const TableElement = ({name, artist, scrobbles, imageLarge, imageSmall, url}) => {
-    const HandleLink = (url) => {
-        window.open(url, '_blank')
+const TableElement = ({name, artist, scrobbles, imageLarge, imageSmall, showChartModal, setChartDetails, year}) => {
+    const HandleClick = () => {
+        setChartDetails({
+            albumName: name,
+            artistName: artist,
+            year: year
+        })
+        showChartModal()
     }
     return (
         <Tooltip textAlign={'center'}  label={
@@ -14,7 +19,7 @@ const TableElement = ({name, artist, scrobbles, imageLarge, imageSmall, url}) =>
                 <strong>{scrobbles} {scrobbles === 1 ? "scrobble" : "scrobbles"}</strong>
             </>
         } placement={'bottom'} hasArrow={true}>
-            <Td textAlign={'center'} p={0} onClick={() => {HandleLink(url)}} cursor={'pointer'}>
+            <Td textAlign={'center'} p={0} onClick={() => { HandleClick() }} cursor={'pointer'}>
                 {
                     //Check if image link is empty or does not exist
                     imageLarge === undefined || imageLarge === "" ?

@@ -6,7 +6,7 @@ import {
     Container, Fade,
     Heading,
     HStack,
-    Input,
+    Input, Modal, ModalBody, ModalCloseButton, ModalContent, ModalHeader, ModalOverlay,
     NumberDecrementStepper,
     NumberIncrementStepper,
     NumberInput,
@@ -22,6 +22,7 @@ import {MiniTimeline} from "./components/MiniTimeline.jsx";
 
 //Google Analytics configuration
 import ReactGA from "react-ga4";
+import {AlbumChart} from "./components/AlbumChart.jsx";
 ReactGA.initialize("G-CBYVZWEHHT");
 
 const App = () => {
@@ -37,6 +38,122 @@ const App = () => {
         year: 2024
     })
 
+    // Store all data for a month
+    const [chartDetails, setChartDetails] = useState({
+        albumName: null,
+        artistName: null,
+        year: null
+    })
+
+    const [chartModalActive, toggleChartModal] = useState(false)
+    const [fullMonthData, updateFullMonthData] = useState([
+        {name: 'January', data: null},
+        {name: 'February', data: null},
+        {name: 'March', data: null},
+        {name: 'April', data: null},
+        {name: 'May', data: null},
+        {name: 'June', data: null},
+        {name: 'July', data: null},
+        {name: 'August', data: null},
+        {name: 'September', data: null},
+        {name: 'October', data: null},
+        {name: 'November', data: null},
+        {name: 'December', data: null},
+    ])
+
+    const addToFullMonthData = (monthIndex, data) => {
+        updateFullMonthData((prevData) => {
+            const updatedData = [...prevData];
+            updatedData[monthIndex].data = data;
+
+            return updatedData;
+        });
+    }
+
+    const getArtistForAlbum = (albumName) => {
+        for (const monthIndex in fullMonthData){
+            //Data not loaded
+            if (fullMonthData[monthIndex].data === null) continue;
+
+            const parentObject = fullMonthData[monthIndex].data.find((element) => element.name === albumName)
+
+            // No match found this month, go to next
+            if (parentObject === undefined) continue;
+
+            return parentObject.artist['#text']
+        }
+    }
+
+    const showChartModal = () => {
+        toggleChartModal(true)
+    }
+
+    const getChartData = (albumName, chartType) => {
+        let albumMonthlyScrobbles = []
+
+        for (const monthIndex in fullMonthData){
+            if (fullMonthData[monthIndex].data === null) continue;
+
+            const albumData = fullMonthData[monthIndex].data.find((element) => element.name === albumName)
+
+            if (albumData === undefined){
+                albumMonthlyScrobbles.push(0)
+            } else {
+                albumMonthlyScrobbles.push(parseInt(albumData.playcount))
+            }
+        }
+
+        // If bar chart then GET OUT
+        if (chartType !== 'line') return albumMonthlyScrobbles
+
+        let cumulativeAlbumScrobbles = []
+        let runningTotal = 0
+
+        for (let index = 0; index < albumMonthlyScrobbles.length; index++){
+            runningTotal += albumMonthlyScrobbles[index]
+            cumulativeAlbumScrobbles.push(runningTotal)
+        }
+
+        return cumulativeAlbumScrobbles
+    }
+
+    const getAllAlbums = () => {
+        let allAlbums = []
+
+        for (let monthIndex = 0; monthIndex < 11; monthIndex++){
+            for (let albumIndex = 0; albumIndex < fullMonthData?.[monthIndex]?.data?.length; albumIndex++){
+                try {
+                    let albumName = fullMonthData[monthIndex].data[albumIndex].name
+                    let albumArtist = fullMonthData[monthIndex].data[albumIndex].artist['#text']
+
+                    let albumExistsInObject = allAlbums.find((element) => element.name === albumName)
+
+                    if (!albumExistsInObject){
+                        allAlbums.push({
+                            name: albumName,
+                            artist: albumArtist,
+                            playcount: parseInt(fullMonthData[monthIndex].data[albumIndex].playcount)
+                        })
+                    } else {
+                        albumExistsInObject.playcount += parseInt(fullMonthData[monthIndex].data[albumIndex].playcount)
+                    }
+
+                } catch (err){
+                    break;
+                }
+            }
+        }
+
+        //Sort array by album playcount descending
+        allAlbums.sort((a,b) => b.playcount - a.playcount)
+
+        return(allAlbums)
+    }
+
+    const onClose = () => {
+        toggleChartModal(false)
+    }
+
     const [childrenLoading, setChildrenLoading] = useState(true)
     const [loadingPercent, updateLoadingPercentage] = useState(0)
 
@@ -46,9 +163,11 @@ const App = () => {
     const monthDataLoaded = () => {
         loadedMonths += 1
 
+        //Loading bar
         let currentLoadingPercentage = (loadedMonths / totalMonths * 100)
         updateLoadingPercentage(currentLoadingPercentage)
 
+        // When loading is finished
         if (loadedMonths === totalMonths){
             setChildrenLoading(false)
         }
@@ -72,6 +191,22 @@ const App = () => {
     }
 
     useEffect(() => {
+        //Reset chart state
+        updateFullMonthData([
+            {name: 'January', data: null},
+            {name: 'February', data: null},
+            {name: 'March', data: null},
+            {name: 'April', data: null},
+            {name: 'May', data: null},
+            {name: 'June', data: null},
+            {name: 'July', data: null},
+            {name: 'August', data: null},
+            {name: 'September', data: null},
+            {name: 'October', data: null},
+            {name: 'November', data: null},
+            {name: 'December', data: null},
+        ])
+
         setChildrenLoading(true)
         setMiniTimelineData([])
         setInputData({...inputData, year: data.year})
@@ -177,11 +312,26 @@ const App = () => {
                                         month={index+1}
                                         storeMonthData={StoreMonthData}
                                         monthDataLoaded={monthDataLoaded}
+                                        storeAllMonthData={addToFullMonthData}
+                                        showChartModal={showChartModal}
+                                        setChartDetails={setChartDetails}
                                     />
                                 )
                             }
+                            <AlbumChart
+                                isOpen={chartModalActive}
+                                onClose={onClose}
+                                chartData={chartDetails}
+                                getChartData={getChartData}
+                                getAllAlbums={getAllAlbums}
+                                setChartData={setChartDetails}
+                                getArtistForAlbum={getArtistForAlbum}
+                                fullMonthData={fullMonthData}
+                            />
                             <MiniTimeline
                                 data={miniTimelineData.sort(idAscending)}
+                                showChartModal={showChartModal}
+                                setChartDetails={setChartDetails}
                                 year={data.year}
                                 user={data.username}
                             />
