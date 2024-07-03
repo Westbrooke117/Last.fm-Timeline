@@ -1,9 +1,8 @@
 import {
     Box,
-    Button, Input, Menu, MenuButton, MenuGroup, MenuItem, MenuList,
+    Button, Menu, MenuButton, MenuList,
     Modal,
     ModalBody,
-    ModalCloseButton,
     ModalContent, ModalFooter,
     ModalHeader,
     ModalOverlay,
@@ -33,7 +32,6 @@ ChartJS.register(
     Legend,
     PointElement
 );
-import { compareTwoStrings, findBestMatch } from "string-similarity"
 
 ChartJS.defaults.color = '#efeff1'
 ChartJS.defaults.borderColor = '#344153'
@@ -126,7 +124,13 @@ const AlbumChart = ({isOpen, onClose, chartData, getChartData, getArtistForAlbum
              <ModalOverlay />
              <ModalContent minW={750} h={'fit-content'}>
                  <ModalHeader display={'flex'} justifyContent={'center'} alignItems={'baseline'}>
-                     {chartData.year} listening stats for {activeChartAlbum} by {getArtistForAlbum(activeChartAlbum)}
+                     <span>
+                         {chartData.year} listening stats for <span
+                         title={'View album on last.fm'}
+                         onClick={() => open(`https://www.last.fm/music/${getArtistForAlbum(activeChartAlbum)}/${activeChartAlbum}`)}
+                         className={'link'}
+                     >{activeChartAlbum} by {getArtistForAlbum(activeChartAlbum)}</span>
+                     </span>
                      {
                          chartDataset.length !== 0 &&
                          <Menu placement={'right-start'} offset={[-16,30]} isLazy={true} lazyBehavior={"unmount"} closeOnBlur={false}>
