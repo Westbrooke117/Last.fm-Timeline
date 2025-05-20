@@ -29,13 +29,13 @@ const App = () => {
     //Used for form validation and setting data state
     const [inputData, setInputData] = useState({
         username: "",
-        year: 2024
+        year: new Date(Date.now()).getFullYear(),
     })
 
     //Actual state used for API requests
     const [data, setData] = useState({
         username: "",
-        year: 2024
+        year: new Date(Date.now()).getFullYear(),
     })
 
     // Store all data for a month
