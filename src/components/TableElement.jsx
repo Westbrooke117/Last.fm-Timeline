@@ -23,22 +23,23 @@ const TableElement = ({name, artist, scrobbles, imageLarge, imageSmall, showChar
                 {
                     //Check if image link is empty or does not exist
                     imageLarge === undefined || imageLarge === "" ?
-                        <Box maxH={'168.967px'} className={'image-container'} style={{overflow: 'hidden'}}>
+                        <Box className={'image-container'} style={{overflow: 'hidden'}}>
                             <LazyLoadImage
                                 src={'https://lastfm.freetls.fastly.net/i/u/300x300/32f2b94ebebb2742709006790b9209b9.png'}
                                 effect={'black-and-white'}
+                                wrapperProps={{ style: { display: 'block' } }}
                             />
                             <Text className={'overlay-text'} fontSize={'xs'} isTruncated>
                                 {name}<br/><strong>{artist}</strong>
                             </Text>
                         </Box>
                         :
-                        //Hard-coded max height of an image. Removing this adds a small margin beneath each image for some reason.
-                        <Box maxH={'168.967px'}>
+                        <Box>
                             <LazyLoadImage
-                                placeholderSrc={imageSmall}
+                                placeholderSrc={imageSmall || undefined}
                                 src={imageLarge}
                                 effect={'black-and-white'}
+                                wrapperProps={{ style: { display: 'block' } }}
                             />
                         </Box>
                 }

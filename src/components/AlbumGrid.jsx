@@ -69,24 +69,55 @@ const AlbumGrid = ({year, month, user, storeMonthData, monthDataLoaded, storeAll
                     .catch(error => console.error(error));
             });
 
-        async function getAlbumImages(artist, album) {
+        async function getAlbumImages(artist, album, mbid) {
             try {
-                const response = await axios.get(`https://ws.audioscrobbler.com/2.0/?method=album.getinfo&api_key=82d112e473f59ade0157abe4a47d4eb5&format=json&artist=${encodeURIComponent(artist)}&album=${encodeURIComponent(album)}`);
+                const query = mbid
+                    ? `mbid=${mbid}`
+                    : `artist=${encodeURIComponent(artist)}&album=${encodeURIComponent(album)}`;
+
+                const response = await axios.get(
+                    `https://ws.audioscrobbler.com/2.0/?method=album.getinfo&api_key=82d112e473f59ade0157abe4a47d4eb5&format=json&${query}`
+                );
+
+                const images = response.data.album.image;
+
+                const findImage = (preferredIndex) => {
+                    for (let i = preferredIndex; i >= 0; i--) {
+                        const url = images[i]?.['#text'];
+                        if (url && url.trim() !== '') return url;
+                    }
+                    return undefined;
+                };
+
                 return {
-                    small: response.data.album.image[0]['#text'],
-                    large: response.data.album.image[3]['#text']
+                    small: findImage(0),
+                    large: findImage(3),
                 };
             } catch (error) {
-                return {
-                    small: undefined,
-                    large: undefined
-                };
+                if (mbid) {
+                    try {
+                        const response = await axios.get(
+                            `https://ws.audioscrobbler.com/2.0/?method=album.getinfo&api_key=82d112e473f59ade0157abe4a47d4eb5&format=json&artist=${encodeURIComponent(artist)}&album=${encodeURIComponent(album)}`
+                        );
+                        const images = response.data.album.image;
+                        const findImage = (preferredIndex) => {
+                            for (let i = preferredIndex; i >= 0; i--) {
+                                const url = images[i]?.['#text'];
+                                if (url && url.trim() !== '') return url;
+                            }
+                            return undefined;
+                        };
+                        return { small: findImage(0), large: findImage(3) };
+                    } catch {
+                        return { small: undefined, large: undefined };
+                    }
+                }
+                return { small: undefined, large: undefined };
             }
         }
-    }, [user, year]);
+    }, [user, year, month]);
 
     let gridSize = new Array(4).fill(0)
-    let cellIndex = 0;
 
     let headingAlignment = 'left';
     if (month % 2 !== 0) headingAlignment = 'right'
@@ -144,25 +175,25 @@ const AlbumGrid = ({year, month, user, storeMonthData, monthDataLoaded, storeAll
                             <Fade in={true}>
                                 <Table size={"sm"} variant={"unstyled"} maxW={1200}>
                                     <Tbody>
-                                        {gridSize.map((row, index) => (
-                                            <Tr key={index}>
-                                                {gridSize.map((cell, index2) => (
-                                                    monthData[cellIndex] === undefined ?
-                                                        <></>
-                                                        :
+                                        {gridSize.map((row, rowIndex) => (
+                                            <Tr key={rowIndex}>
+                                                {gridSize.map((cell, colIndex) => {
+                                                    const index = rowIndex * 4 + colIndex;
+                                                    return monthData[index] === undefined ? null : (
                                                         <TableElement
-                                                            key={index2}
-                                                            artist={monthData[cellIndex].artist}
-                                                            imageSmall={monthData[cellIndex].image.small}
-                                                            imageLarge={monthData[cellIndex].image.large}
-                                                            name={monthData[cellIndex].name}
-                                                            url={monthData[cellIndex].url}
-                                                            scrobbles={monthData[cellIndex++].scrobbles}
+                                                            key={colIndex}
+                                                            artist={monthData[index].artist}
+                                                            imageSmall={monthData[index].image.small}
+                                                            imageLarge={monthData[index].image.large}
+                                                            name={monthData[index].name}
+                                                            url={monthData[index].url}
+                                                            scrobbles={monthData[index].scrobbles}
                                                             showChartModal={showChartModal}
                                                             setChartDetails={setChartDetails}
                                                             year={year}
                                                         />
-                                                ))}
+                                                    );
+                                                })}
                                             </Tr>
                                         ))}
                                     </Tbody>

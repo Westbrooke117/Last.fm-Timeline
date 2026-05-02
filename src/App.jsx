@@ -14,7 +14,7 @@ import {
     NumberInputStepper, Progress, SlideFade,
     Text,
 } from "@chakra-ui/react";
-import {useEffect, useState} from "react";
+import {useEffect, useRef, useState} from "react";
 import axios from "axios";
 import {AlbumGrid} from "./components/AlbumGrid.jsx";
 import {ArrowBackIcon, ArrowForwardIcon} from '@chakra-ui/icons'
@@ -120,7 +120,7 @@ const App = () => {
     const getAllAlbums = () => {
         let allAlbums = []
 
-        for (let monthIndex = 0; monthIndex < 11; monthIndex++){
+        for (let monthIndex = 0; monthIndex <= 11; monthIndex++){
             for (let albumIndex = 0; albumIndex < fullMonthData?.[monthIndex]?.data?.length; albumIndex++){
                 try {
                     let albumName = fullMonthData[monthIndex].data[albumIndex].name
@@ -157,31 +157,30 @@ const App = () => {
     const [childrenLoading, setChildrenLoading] = useState(true)
     const [loadingPercent, updateLoadingPercentage] = useState(0)
 
-    let totalMonths;
-    let loadedMonths = 0;
+    const totalMonths = useRef(0)
+    const loadedMonths = useRef(0)
 
     const monthDataLoaded = () => {
-        loadedMonths += 1
-
-        //Loading bar
-        let currentLoadingPercentage = (loadedMonths / totalMonths * 100)
+        loadedMonths.current += 1
+        let currentLoadingPercentage = (loadedMonths.current / totalMonths.current) * 100
         updateLoadingPercentage(currentLoadingPercentage)
 
-        // When loading is finished
-        if (loadedMonths === totalMonths){
+        if (loadedMonths.current === totalMonths.current) {
             setChildrenLoading(false)
         }
     }
 
     const [errorMessage, setErrorMessage] = useState("")
     const [hasError, setErrorState] = useState(false)
+
     const generateMonthArray = () => {
-        let currentMonthInt = new Date().getMonth()+1
 
-        let monthArray = new Array(data.year === currentYear ? currentMonthInt : 12).fill(0);
-        totalMonths = monthArray.length;
+        let currentMonthInt = new Date().getMonth() + 1
+        let monthArray = new Array(data.year === currentYear ? currentMonthInt : 12).fill(0)
 
-        return monthArray;
+        totalMonths.current = monthArray.length
+
+        return monthArray
     }
 
     // Mini Timeline will load a column when its corresponding album grid has finished loading
@@ -206,11 +205,13 @@ const App = () => {
             {name: 'November', data: null},
             {name: 'December', data: null},
         ])
-
         setChildrenLoading(true)
         setMiniTimelineData([])
+
+        loadedMonths.current = 0
         setInputData({...inputData, year: data.year})
-    },[data.year])
+
+    },[data.year, data.username])
 
     const FormErrorChecker = async (name) => {
         // To comply with last.fm username conventions
@@ -304,7 +305,7 @@ const App = () => {
                     <SlideFade in={!childrenLoading}>
                         <Box>
                             {
-                                generateMonthArray().map((month, index) =>
+                                data.username && generateMonthArray().map((month, index) =>
                                     <AlbumGrid
                                         key={`month${index+1}`}
                                         user={data.username}

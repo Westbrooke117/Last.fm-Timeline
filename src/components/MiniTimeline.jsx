@@ -103,8 +103,8 @@ const MiniTimeline = ({user, year, data, setChartDetails, showChartModal}) => {
             </HStack>
             <HStack justifyContent={'center'} mt={4}>
                 {
-                    colorPresets.map(color => (
-                        <Button border={'1px solid #3f444e'} variant={'unstyled'} onClick={() => setBackgroundColor(color)} backgroundColor={color} borderRadius={20}></Button>
+                    colorPresets.map((color, index) => (
+                        <Button key={index} border={'1px solid #3f444e'} variant={'unstyled'} onClick={() => setBackgroundColor(color)} backgroundColor={color} borderRadius={20}></Button>
                     ))
                 }
                 <StackDivider/>
