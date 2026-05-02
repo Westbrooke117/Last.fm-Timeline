@@ -9,6 +9,4 @@ An interactive tool to view your last.fm listening history month-by-month.
 - Click on album images to reveal charts showcasing listening stats throughout the year
   
 ## Current Known Bugs 🐞
-- Form error messages appearing after the timeline has loaded causes it to shift downward slightly
-- Rarely images will not load
-- Loading another user causes the timeline summary to have both users music resulting in misalignment
+- Sometimes images will not load
